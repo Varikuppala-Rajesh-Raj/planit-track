@@ -39,47 +39,74 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, onSelect, isPopular, currentP
   return (
     <Card
       className={cn(
-        'relative transition-all duration-300 hover:shadow-elegant',
-        isPopular && 'border-primary shadow-glow',
-        currentPlan && 'bg-gradient-card'
+        'relative transition-all duration-300 hover:shadow-elegant hover:-translate-y-1 group border-2',
+        isPopular && 'border-primary shadow-glow scale-105',
+        currentPlan && 'bg-gradient-card border-success',
+        !isPopular && !currentPlan && 'border-border hover:border-primary/50'
       )}
     >
       {isPopular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className="bg-gradient-primary text-primary-foreground">Most Popular</Badge>
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+          <Badge className="bg-gradient-primary text-primary-foreground px-4 py-1 text-sm font-semibold shadow-lg">
+            Most Popular
+          </Badge>
         </div>
       )}
       
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{plan.name}</CardTitle>
-        <CardDescription className="text-muted-foreground">{plan.description}</CardDescription>
-        <div className="mt-4">
-          <span className="text-4xl font-bold">{formatPrice(plan.price, plan.billingCycle)}</span>
-          <Badge variant="outline" className={`ml-2 border-${getTierColor(plan.tier)}`}>
+      <CardHeader className="text-center pb-6 pt-8">
+        <div className="w-16 h-16 bg-gradient-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
+          <span className="text-2xl font-bold text-white">{plan.tier[0]}</span>
+        </div>
+        <CardTitle className="text-3xl font-bold">{plan.name}</CardTitle>
+        <CardDescription className="text-muted-foreground text-lg leading-relaxed">
+          {plan.description}
+        </CardDescription>
+        <div className="mt-6">
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-5xl font-bold">{formatPrice(plan.price, plan.billingCycle).split('/')[0]}</span>
+            <span className="text-muted-foreground text-lg">
+              /{plan.billingCycle === 'MONTHLY' ? 'month' : 'year'}
+            </span>
+          </div>
+          <Badge 
+            variant="outline" 
+            className={cn(
+              'mt-3 border-2',
+              plan.tier === 'BASIC' && 'border-tier-basic text-tier-basic',
+              plan.tier === 'PRO' && 'border-tier-pro text-tier-pro',
+              plan.tier === 'ENTERPRISE' && 'border-tier-enterprise text-tier-enterprise'
+            )}
+          >
             {plan.tier}
           </Badge>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4 px-6">
         {plan.features.map((feature, index) => (
-          <div key={index} className="flex items-center space-x-2">
-            <Check className={`h-4 w-4 text-${getTierColor(plan.tier)} flex-shrink-0`} />
-            <span className="text-sm">{feature}</span>
+          <div key={index} className="flex items-start space-x-3">
+            <Check className={cn(
+              'h-5 w-5 flex-shrink-0 mt-0.5',
+              plan.tier === 'BASIC' && 'text-tier-basic',
+              plan.tier === 'PRO' && 'text-tier-pro',
+              plan.tier === 'ENTERPRISE' && 'text-tier-enterprise'
+            )} />
+            <span className="text-base leading-relaxed">{feature}</span>
           </div>
         ))}
       </CardContent>
       
-      <CardFooter>
+      <CardFooter className="pt-6">
         <Button
           className={cn(
-            'w-full',
-            isPopular && 'bg-gradient-primary hover:opacity-90',
-            currentPlan && 'opacity-60 cursor-not-allowed'
+            'w-full h-12 text-base font-semibold',
+            isPopular && 'bg-gradient-primary hover:opacity-90 shadow-glow',
+            currentPlan && 'opacity-60 cursor-not-allowed bg-success'
           )}
           onClick={() => onSelect?.(plan)}
           disabled={currentPlan}
-          variant={isPopular ? 'default' : 'outline'}
+          variant={isPopular ? 'premium' : currentPlan ? 'default' : 'outline'}
+          size="lg"
         >
           {currentPlan ? 'Current Plan' : 'Select Plan'}
         </Button>
