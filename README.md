@@ -1,73 +1,182 @@
-# Welcome to your Lovable project
+# Subscription Management System
 
-## Project info
+A complete full-stack subscription management system built with React, Node.js, TypeScript, and PostgreSQL.
 
-**URL**: https://lovable.dev/projects/03571671-7953-4d1b-a1f3-a7a91c27fd5d
+## 🚀 Quick Start
 
-## How can I edit this code?
+### Prerequisites
+- Docker & Docker Compose
+- Node.js 18+ (for local development)
 
-There are several ways of editing your application.
+### Run with Docker
+```bash
+# Clone and start all services
+docker compose up --build
 
-**Use Lovable**
+# The application will be available at:
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:3001
+# Database: postgresql://postgres:password@localhost:5432/subscription_db
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/03571671-7953-4d1b-a1f3-a7a91c27fd5d) and start prompting.
+### Local Development Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+#### Backend
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Update .env with your settings
 
-**Use your preferred IDE**
+# Database setup
+npx prisma migrate dev --name init
+npx prisma generate
+npm run seed
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+#### Frontend
+```bash
+# Already running in Lovable - this is for local setup
+npm install
+npm run dev
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📊 Import Dataset
 
-**Use GitHub Codespaces**
+To import the subscription dataset:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+cd backend
+npm run import-dataset
+```
 
-## What technologies are used for this project?
+This reads `/mnt/data/SubscriptionUseCase_Dataset.xlsx` and populates the database.
 
-This project is built with:
+## 🏗️ Architecture
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Frontend (React + TypeScript)
+- **Auth**: HTTP-only cookie authentication
+- **State**: React Context for user state
+- **API**: Axios with automatic cookie handling
+- **UI**: Tailwind CSS + shadcn/ui components
 
-## How can I deploy this project?
+### Backend (Node.js + Express + TypeScript)
+- **Database**: PostgreSQL with Prisma ORM
+- **Auth**: JWT tokens in HTTP-only cookies
+- **Security**: Helmet, CORS, input validation
+- **Logging**: Winston with structured logs
 
-Simply open [Lovable](https://lovable.dev/projects/03571671-7953-4d1b-a1f3-a7a91c27fd5d) and click on Share -> Publish.
+## 🔐 Authentication
 
-## Can I connect a custom domain to my Lovable project?
+- JWT tokens stored in HTTP-only cookies
+- No localStorage usage anywhere
+- Automatic token validation on protected routes
+- Role-based access control (USER/ADMIN)
 
-Yes, you can!
+## 📱 API Endpoints
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Auth
+- `POST /api/auth/signup` - Create account
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user
+- `GET /api/auth/me` - Get current user
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Plans
+- `GET /api/plans` - List all plans
+- `GET /api/plans/:id` - Get plan details
+- `POST /api/plans` - Create plan (admin)
+- `PUT /api/plans/:id` - Update plan (admin)
+- `DELETE /api/plans/:id` - Delete plan (admin)
+
+### Subscriptions
+- `GET /api/subscriptions` - User's subscriptions
+- `POST /api/subscriptions` - Create subscription
+- `PUT /api/subscriptions/:id` - Update subscription
+- `DELETE /api/subscriptions/:id` - Cancel subscription
+- `POST /api/subscriptions/:id/renew` - Renew subscription
+
+### Admin
+- `GET /api/admin/analytics` - System analytics
+- `GET /api/admin/audit-logs` - Audit trail
+
+## 🗄️ Database Schema
+
+- **Users**: Authentication and profile data
+- **Plans**: Subscription plan definitions
+- **Subscriptions**: User subscription records
+- **AuditLogs**: Complete audit trail
+- **UsageRecords**: Usage tracking metrics
+- **Discounts**: Promotional codes and discounts
+
+## ⚡ TODO: Implementation Tasks
+
+### Payment Integration
+- [ ] Integrate Stripe/PayPal payment processing
+- [ ] Handle payment failures and retries
+- [ ] Implement refund processing
+- [ ] Add payment method management
+
+### Business Logic
+- [ ] Implement upgrade/downgrade pricing logic
+- [ ] Add prorated billing calculations
+- [ ] Create usage-based billing
+- [ ] Build recommendation engine
+
+### Notifications
+- [ ] Email service integration
+- [ ] SMS notifications
+- [ ] In-app notification system
+- [ ] Webhook endpoints for external integrations
+
+### Advanced Features
+- [ ] Usage quota enforcement
+- [ ] Advanced analytics and reporting
+- [ ] A/B testing framework
+- [ ] Customer support ticketing
+
+### Security & Performance
+- [ ] Rate limiting
+- [ ] Redis caching layer
+- [ ] Database connection pooling
+- [ ] API versioning
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd backend
+npm test
+
+# Frontend tests  
+npm test
+```
+
+## 📦 Environment Variables
+
+### Backend (.env)
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/subscription_db"
+JWT_SECRET="your-super-secret-jwt-key"
+FRONTEND_URL="http://localhost:5173"
+DATASET_PATH="/mnt/data/SubscriptionUseCase_Dataset.xlsx"
+```
+
+## 👥 Default Users
+
+After seeding:
+- **Admin**: admin@example.com / admin123
+- **User**: user@example.com / user123
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch
+3. Make changes with tests
+4. Submit pull request
+
+## 📄 License
+
+MIT License - see LICENSE file for details.

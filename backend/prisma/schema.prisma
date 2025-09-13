@@ -1,0 +1,145 @@
+// Prisma schema for Subscription Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Plan {
+  id           String       @id @default(cuid())
+  name         String
+  description  String
+  price        Float
+  billingCycle BillingCycle
+  features     String[]     // Array of feature strings
+  tier         PlanTier
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+  discounts     Discount[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String
+  planId    String
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime
+  endDate   DateTime
+  autoRenew Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // Relations
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan         Plan           @relation(fields: [planId], references: [id])
+  usageRecords UsageRecord[]
+  auditLogs    AuditLog[]
+
+  @@map("subscriptions")
+}
+
+model Discount {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  name        String
+  description String?
+  type        DiscountType
+  value       Float       // Percentage (0-100) or fixed amount
+  planId      String?     // Optional: specific to a plan
+  isActive    Boolean     @default(true)
+  validFrom   DateTime
+  validTo     DateTime
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  plan Plan? @relation(fields: [planId], references: [id])
+
+  @@map("discounts")
+}
+
+model UsageRecord {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  metricName     String   // e.g., "api_calls", "storage_gb", "users"
+  value          Float
+  timestamp      DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  // Relations
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("usage_records")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorId        String   // User who performed the action
+  action         String   // e.g., "subscription_created", "plan_updated"
+  targetType     String   // e.g., "subscription", "plan", "user"
+  targetId       String?  // ID of the target object
+  subscriptionId String?  // Optional: related subscription
+  metadata       Json?    // Additional context data
+  timestamp      DateTime @default(now())
+
+  // Relations
+  actor        User          @relation(fields: [actorId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum PlanTier {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAUSED
+  EXPIRED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
